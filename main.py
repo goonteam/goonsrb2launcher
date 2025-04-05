@@ -1,0 +1,100 @@
+import sys
+import os
+import subprocess
+import ctypes
+import json
+
+from PyQt5.QtWidgets import *
+from PyQt5 import uic, QtGui
+from PyQt5.QtCore import QSettings
+
+
+COMPANY_NAME = "goonteam"
+APP_NAME = "goonsrb2launcher"
+
+ui_folder = "ui"
+image_folder = "img"
+profiles_folder = "profiles"
+default_profile = os.path.join(profiles_folder, "default.json")
+
+
+# create profiles folder
+try:
+    os.mkdir(profiles_folder)
+except FileExistsError:
+    print("Already a profiles folder")
+
+# then default profile
+
+if not os.path.exists(default_profile):
+    with open(default_profile, "w", encoding="utf-8") as f:
+        f.write(json.dumps({
+            "srb2_executable": ""
+            }, indent=4))
+
+data_file = open(default_profile, "r+")
+json_data = json.load(data_file)
+srb2_file = json_data["srb2_executable"]
+srb2_dir = os.path.join(srb2_file, "..")
+
+def update_executable_file(new_executable):
+    json_data = json.load(data_file)
+    json_data["srb2_executable"] = new_executable
+    data_file.write(json.dumps(json_data, indent=4))
+    
+
+# taken from stakcoverflow for the icon
+myappid = u"veryrealgooncorp.goonlaunch.forsrb2.69420" # arbitrary string
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
+class SettingsWindow(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.settings = QSettings(COMPANY_NAME, APP_NAME)
+        uic.loadUi(os.path.join(ui_folder, "settings.ui"), self)
+        self.show()
+
+        self.selectLocation.clicked.connect(self.select_file)
+        self.srb2Location.setText(srb2_file)
+
+    def select_file(self):
+        self.srb2Location.setText(QFileDialog.getOpenFileName()[0])
+
+
+class Launcher(QMainWindow):
+    def __init__(self):
+        super(Launcher, self).__init__()
+        uic.loadUi(os.path.join(ui_folder, "maingui.ui"), self)
+        self.setWindowTitle("goonsrb2launcher")
+        self.setWindowIcon(QtGui.QIcon(os.path.join(image_folder, "goonapplogo.png")))
+        self.show()
+        
+
+        self.playButton.clicked.connect(self.play)
+        self.actionSettings.triggered.connect(self.open_settings)
+
+    def play(self):
+        if srb2_file:
+            os.chdir(srb2_dir)
+            subprocess.Popen(srb2_file)
+
+    def open_settings(self):
+        dialog = SettingsWindow()
+        if dialog.exec():
+            global srb2_file
+            global srb2_dir
+            print("user said ok")
+            srb2_file = dialog.srb2Location.text()
+            srb2_dir = os.path.join(srb2_file, "..")
+
+
+
+
+def main(): # c ahh programming
+    app = QApplication(sys.argv)
+    window = Launcher()
+    app.exec_()
+
+if __name__ == "__main__":
+    main()
