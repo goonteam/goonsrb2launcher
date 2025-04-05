@@ -26,21 +26,45 @@ except FileExistsError:
 
 # then default profile
 
+try:
+    temp_prof_file = open(default_profile, "r")
+    temp_prof_data = temp_prof_file.read()
+    temp_prof_file.close()
+    if temp_prof_data.strip() == "":
+        os.remove(default_profile)
+except FileNotFoundError:
+    print("idk")
+
 if not os.path.exists(default_profile):
     with open(default_profile, "w", encoding="utf-8") as f:
         f.write(json.dumps({
             "srb2_executable": ""
             }, indent=4))
 
+    
+
 data_file = open(default_profile, "r+")
 json_data = json.load(data_file)
 srb2_file = json_data["srb2_executable"]
 srb2_dir = os.path.join(srb2_file, "..")
 
+def update_information():
+    global srb2_dir
+    global srb2_file
+    data_file = open(default_profile, "r")
+    real_data = json.loads(data_file.read())
+    srb2_file = real_data["srb2_executable"]
+    srb2_dir = os.path.join(real_data["srb2_executable"], "..")
+
 def update_executable_file(new_executable):
-    json_data = json.load(data_file)
+    data_file = open(default_profile, "r+")
+    json_data = json.loads(data_file.read())
+    data_file.close()
     json_data["srb2_executable"] = new_executable
+    data_file = open(default_profile, "w")
     data_file.write(json.dumps(json_data, indent=4))
+    data_file.close()
+    update_information()
     
 
 # taken from stakcoverflow for the icon
@@ -85,8 +109,7 @@ class Launcher(QMainWindow):
             global srb2_file
             global srb2_dir
             print("user said ok")
-            srb2_file = dialog.srb2Location.text()
-            srb2_dir = os.path.join(srb2_file, "..")
+            update_executable_file(dialog.srb2Location.text())
 
 
 
