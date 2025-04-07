@@ -5,8 +5,7 @@ import ctypes
 import json
 
 from PyQt5.QtWidgets import *
-from PyQt5 import uic, QtGui
-from PyQt5.QtCore import QSettings
+from PyQt5 import QtGui
 
 from ui_py import maingui
 from ui_py import settings
