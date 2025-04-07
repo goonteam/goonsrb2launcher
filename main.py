@@ -105,7 +105,7 @@ class Launcher(maingui.Ui_MainWindow):
             global srb2_file
             global srb2_dir
             print("user said ok")
-            update_executable_file(dialog.srb2Location.text())
+            update_executable_file(dialog_ui.srb2Location.text())
 
 
 def main(): # c ahh programming

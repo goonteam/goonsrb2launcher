@@ -15,7 +15,7 @@ exe_options = {
 }
 
 setup(name = "goonsrb2launcher",
-      version = "0.1.1",
+      version = "0.2.0",
       description = "Simple SRB2 launcher, nothing more, nothing less.",
       executables = executable,
       options = {"build_exe": exe_options})
