@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QSettings
 
+from ui_py import maingui
+from ui_py import settings
 
 COMPANY_NAME = "goonteam"
 APP_NAME = "goonsrb2launcher"
@@ -71,13 +73,9 @@ def update_executable_file(new_executable):
 myappid = u"veryrealgooncorp.goonlaunch.forsrb2.69420" # arbitrary string
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-class SettingsWindow(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.settings = QSettings(COMPANY_NAME, APP_NAME)
-        uic.loadUi(os.path.join(ui_folder, "settings.ui"), self)
-        self.show()
+class SettingsDialog(settings.Ui_Dialog):
+    def setupUi(self, Dialog):
+        super().setupUi(Dialog)
 
         self.selectLocation.clicked.connect(self.select_file)
         self.srb2Location.setText(srb2_file)
@@ -85,15 +83,10 @@ class SettingsWindow(QDialog):
     def select_file(self):
         self.srb2Location.setText(QFileDialog.getOpenFileName()[0])
 
+class Launcher(maingui.Ui_MainWindow):
 
-class Launcher(QMainWindow):
-    def __init__(self):
-        super(Launcher, self).__init__()
-        uic.loadUi(os.path.join(ui_folder, "maingui.ui"), self)
-        self.setWindowTitle("goonsrb2launcher")
-        self.setWindowIcon(QtGui.QIcon(os.path.join(image_folder, "goonapplogo.png")))
-        self.show()
-        
+    def setupUi(self, MainWindow):
+        super().setupUi(MainWindow)
 
         self.playButton.clicked.connect(self.play)
         self.actionSettings.triggered.connect(self.open_settings)
@@ -104,7 +97,11 @@ class Launcher(QMainWindow):
             subprocess.Popen(srb2_file)
 
     def open_settings(self):
-        dialog = SettingsWindow()
+        dialog = QDialog()
+        dialog_ui = SettingsDialog()
+        dialog_ui.setupUi(dialog)
+        dialog.setWindowTitle("goonsrb2launcher | settings")
+        dialog.setWindowIcon(QtGui.QIcon(os.path.join(image_folder, "goonapplogo.png")))
         if dialog.exec():
             global srb2_file
             global srb2_dir
@@ -112,12 +109,15 @@ class Launcher(QMainWindow):
             update_executable_file(dialog.srb2Location.text())
 
 
-
-
 def main(): # c ahh programming
     app = QApplication(sys.argv)
-    window = Launcher()
-    app.exec_()
+    window = QMainWindow()
+    app_ui = Launcher()
+    app_ui.setupUi(window)
+    window.setWindowTitle("goonsrb2launcher")
+    window.setWindowIcon(QtGui.QIcon(os.path.join(image_folder, "goonapplogo.png")))
+    window.show()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()
